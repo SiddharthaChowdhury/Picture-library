@@ -1,208 +1,221 @@
-window.onload = function(){
-    // User inputs
-    var user_input = {
-        url: 'upload-image',
-        dropzone: '#drop-overlay',
-        uploadProgress: '#uploads-progress'
-    }
+/*
+    Dev STORY
+    1. Get the configuration details like dropContainer, Upload URL , etc
+    2. Create and place the overlay(our Dropzone) on dropContainer.
+    3. Take file inputs either from choosing files or drag and drop then pass it to process
+    4. Add files to filelist[], validate basic rules.
+*/
+function $Incoming(conf){
+    this.drop_cont = document.querySelector(conf.dropAreaID);
+    // this.maxUploadSize = conf.maxUploadSize || '5 MB'
+    this.uploadURL = conf.uploadURL;
+    this.fileTypes = conf.fileTypes; // array
+    this.dropZone = null;
+    this.progCont = null;
+    this.filelist = [];
+    this._init();
+}
 
-    var drop_zone = document.querySelector(user_input.dropzone);
-    var overlay = document.querySelectorAll('.overlay');
-    var image_data = [];
-    if( document.getElementById("si_upload_progress_cont") == null){
-        console.log(document.querySelector(user_input.uploadProgress))
-        if(document.querySelector(user_input.uploadProgress) == null)
-        {
-            var progressCont = document.createElement('div');
-            progressCont.setAttribute('id', 'si_upload_progress_cont');
-            progressCont.setAttribute('style', 'display:none; position:absolute; width: 200px; height: 100%; overflow-y: scroll; right: 0px; bottom: 0px;');
-            document.querySelector(user_input.dropzone).appendChild(progressCont)
-        }
-        else{
-            var progressCont = document.createElement('div');
-            progressCont.setAttribute('id', 'si_upload_progress_cont');
-            progressCont.setAttribute('style', 'display:none;');
-            document.querySelector(user_input.uploadProgress).appendChild(progressCont)
-        }
-    }
-    
-    document.querySelector(user_input.dropzone).addEventListener('dragenter',function(e){
-        // e.preventDefault();
-        showOverlay();
-    });
-  
-    drop_zone.addEventListener('dragover',function(e){
+$Incoming.prototype._init = function(){
+    /*
+    *   Creating the structure:
+        |-- dropzone(Overlay)
+        |-- --  top nav
+        |-- -- --  hidden input file
+        |-- -- --  choose files button
+        |-- --  close button
+    */
+    this.drop_cont.setAttribute('style', 'position: relative;');
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.setAttribute('class', '$droparea');
+    overlay.setAttribute('style', 'position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; min-height:100px; background-color: rgba(0,0,0,0.9); color:#fff; display:block;');
+    overlay.addEventListener('dragover', function(e){
         e.preventDefault();
     });
-  
-    drop_zone.addEventListener('drop',function(e){
-        document.querySelector('#si_upload_progress_cont').style["display"] = "block";
+    overlay.addEventListener('drop', function(e){
         e.preventDefault();
-        var files = e.dataTransfer.files; //It returns a FileList object
-        for (var i = 0; i < files.length; i++) {
+        var files = e.dataTransfer.files; //returns a FileList object
+        self._processFiles(files);
+    })
+
+    var overlayTopNav = document.createElement('div');
+    overlayTopNav.setAttribute('style', 'padding:15px; font-size:0.9em; margin-bottom:15px;')
+    overlayTopNav.innerHTML = 'Drag and Drop your images below or simply '
+
+    var preUploadCont = document.createElement('div');
+    preUploadCont.setAttribute('style', 'padding:10px 20px;');
+
+    var inputFile = document.createElement('input');
+    inputFile.setAttribute('type', 'file');
+    inputFile.setAttribute('id', '$chooseFiles');
+    inputFile.setAttribute('multiple', true);
+    inputFile.setAttribute('style', 'display: none;');
+    inputFile.addEventListener('change', function(e){
+        var files = e.target.files //returns a FileList object
+        self._processFiles(files);
+    })
+
+    var chooseButton = document.createElement('a');
+    chooseButton.innerHTML = 'Choose Files!'
+    chooseButton.setAttribute('style', 'padding:5px 10px; border-radius:10px; border:1px solid cyan; text-decoration:none; color:#fff; cursor:pointer;');
+    chooseButton.addEventListener('click', function(){
+        inputFile.click()
+    })
+
+    overlayTopNav.appendChild(chooseButton);
+    overlayTopNav.appendChild(inputFile);
+
+    var closeOverlay = document.createElement('a');
+    closeOverlay.innerHTML = '&#10006;';
+    closeOverlay.setAttribute('style', 'position: absolute; cursor:pointer; right: 10px; top: 10px; font-size: 17px; text-decoration: none; color: #fff; border-radius: 50%; border: 2px solid #fff; padding: 5px 10px;')
+    closeOverlay.addEventListener('click', function(e){
+        overlay.style.display = 'none';
+    })
+    overlay.appendChild(overlayTopNav);
+    overlay.appendChild(closeOverlay);
+    overlay.appendChild(preUploadCont);
+        
+    self.drop_cont.appendChild(overlay);
+    self.dropZone = overlay;
+    self.progCont = preUploadCont;
+}
+
+$Incoming.prototype._processFiles = function(files){
+    var self = this;
+    // if(self.filelist.length < 10){
+        for(var i = 0; i < files.length; i++){
             var file = files[i];
-                filename = file.name;
-            if(file.type.match('image')){                   
-                var _fileReader = new FileReader();
-                _fileReader.onload = (function(file) {
-                    return function(evt) {
-                        // si_cookHTML(evt, file)
-                        si_uploadAsync(evt, file)
-                    };
-                })(files[i]);
-                _fileReader.readAsDataURL(files[i]);
+            // if file is image and size is proper
+            if(file.type.match('image')){ 
+                var FR = new FileReader();
+                FR.onload = (function(file){
+                    return function(evt){
+                        __ajxUpload(evt, file);
+                    }
+                })(file)
+                FR.readAsDataURL(file)
+                self.filelist.push(file) 
             }
         }
-        hideOverlay()
-    });
-  
-    drop_zone.addEventListener('dragleave',function(e){
-        e.preventDefault();
-        hideOverlay();
-    });
+    // }
+    // else{
+    //     alert("Maximum 10 files can be uploaded at a time.")
+    // }
 
-    function hideOverlay(){
-        for(var i = 0; i< overlay.length; i++){
-            overlay[i].setAttribute('style','display:none;')
-        }
-    }
-    function showOverlay(){
-        for(var i = 0; i< overlay.length; i++){
-            overlay[i].setAttribute('style','display:block;')
-        }
-    }
-
-    //------------------------------Asynchronous upload
-    function si_uploadAsync(evt, file){
+    function __ajxUpload(evt, file){
         var formdata = new FormData();
         formdata.append("file", file);
-        var progressDOM = si_ProgressCook(file.name, file.size);
+        var progressDOM = __cookProgressBars( file );
         var ajax = new XMLHttpRequest();
         ajax.upload.addEventListener("progress", (function(progressDOM){
             return function(event) {
-                si_updateProgressStatus(event, progressDOM);
+                ___updateProgressStatus(event, progressDOM);
             };
         })(progressDOM), false);
         ajax.addEventListener("load", (function(progressDOM){
             return function(event){
-                si_completeUpload(event, progressDOM);
+                ___completeUpload(event, progressDOM);
             }
         })(progressDOM), false);
         ajax.addEventListener("error", (function(progressDOM){
             return function(event){
-                si_uploadError(event, progressDOM);
+                ___uploadError(event, progressDOM);
             }
         })(progressDOM), false);
         ajax.addEventListener("abort", (function(progressDOM){
             return function(event){
-                si_uploadAbort(event, progressDOM);
+                ___uploadAbort(event, progressDOM);
             }
         })(progressDOM), false);
-        ajax.open("POST", user_input.url);
+        ajax.open("POST", self.uploadURL);
         ajax.send(formdata);
     }
 
-    function si_updateProgressStatus(event, progressDOM){
-        // _("loaded_n_total").innerHTML = "Uploaded "+event.loaded+" bytes of "+event.total;
-        var percent = (event.loaded / event.total) * 100;
-        progressDOM.percHndlr.innerHTML = Math.round(percent)+'%';
-        progressDOM.progHndlr.style["width"] = Math.round(percent)+'%'; 
-        // console.log("Uploaded "+event.loaded+" bytes of "+event.total+" Percent:"+Math.round(percent)+"% uploaded... please wait")
-    }
-    function si_completeUpload(event, progressDOM){
-        progressDOM.progHndlr.style['background-color'] = '#40FF00';
-        setTimeout(function(){
-            progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
-        },7000);
-    }
-    function si_uploadError(event, progressDOM){
-      progressDOM.progHndlr.style['background-color'] = 'red';
-        progressDOM.percHndlr.innerHTML = '<font color="red">FAILED!</font>';
-        setTimeout(function(){
-            progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
-        },9000);
-    }
-    function si_uploadAbort(event, progressDOM){
-        progressDOM.progHndlr.style['background-color'] = 'red';
-        progressDOM.percHndlr.innerHTML = '<font color="red">ABORTED!</font>';
-        setTimeout(function(){
-            progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
-        },9000);
-    }
-    function si_ProgressCook(filename, filesize){
-        var ret = {};
-        var _size = filesize;
+    function __cookProgressBars( file ){
+        /*
+        *   Creating the structure of progress:
+            |-- each(Progress box)
+            |-- -- image name [size:]
+            |-- -- progress bar
+            |-- -- Status + Percent %
+        */
+        var _size = file.size;
         var fSExt = new Array('Bytes', 'KB', 'MB', 'GB'),
         i=0;while(_size>900){_size/=1024;i++;}
         var exactSize = (Math.round(_size*100)/100)+' '+fSExt[i];
 
-        var perProg = document.createElement('div');
-        perProg.setAttribute('class', 'si_eachUpld');
-        perProg.setAttribute('style', 'padding: 10px 15px; background-color: #333; color: #f3f3f3; margin-bottom: 1px;');
-            var small = document.createElement('small');
-                var fnam = document.createElement('div');
-                    fnam.setAttribute('style', 'overflow-x:hidden;')
-                var prog = document.createElement('div');
-                    prog.setAttribute('class', 'si_upload_progress');
-                    prog.setAttribute('style', 'width: 0%; height: 2px; background-color: yellow; margin: 10px 0px;');
-                
-                var fsiz = document.createElement('div');
-                var perc = document.createElement('div');
+        var each = document.createElement('div');
+        each.setAttribute('style', 'position:relative; padding:10px; width:200px; font-size:0.7em; display:inline-block; margin:10px 10px 0px 0px;');
 
-        fnam.innerHTML = filename;
-        fsiz.innerHTML = exactSize;
-        perc.innerHTML = '0%'; 
-        ret['nameHndlr'] = fnam;
-        ret['progHndlr'] = prog;
-        ret['sizeHndlr'] = fsiz;
-        ret['percHndlr'] = perc;
-        ret['thisUplod'] = perProg
+        var frst = document.createElement('div');
+            var nm = document.createElement('a');
+            nm.setAttribute('style', 'text-decoration:none; ')
+            nm.innerHTML = file.name.length > 20 ? file.name.substring(0,20)+'...'+' ('+exactSize+')' : file.name+' ('+exactSize+')';
+        
+            var clsBx = document.createElement('a');
+            clsBx.setAttribute('style', 'cursor:pointer; color:silver; text-decoration:none; margin-left 10px; position:absolute; top:5px; right:5px;')
+            clsBx.innerHTML = '&#10006;';
+            clsBx.addEventListener('click', function(e){
+                e.preventDefault();
+                self.progCont.removeChild(each);
+            })
+        frst.appendChild(nm); frst.appendChild(clsBx);
 
-        small.appendChild(fnam);
-        small.appendChild(fsiz);
-        small.appendChild(prog);
-        small.appendChild(perc);
+        var progress = document.createElement('div');
+        progress.setAttribute('style', 'height:2px; width:90%; background-color:yellow; margin:5px 0px;')
 
-        perProg.appendChild(small);
-        document.querySelector('#si_upload_progress_cont').appendChild(perProg);
-        return ret;
+        var last = document.createElement('div')
+            var status = document.createElement('a');
+            status.setAttribute('style', 'text-decoration:none; margin-left 10px;')
+            status.innerHTML = 'uploading..';
+
+            var percent = document.createElement('a');
+            percent.setAttribute('style', 'text-decoration:none; margin-left 10px;')
+            percent.innerHTML = '0%';
+        last.appendChild(status); last.appendChild(percent);
+
+        each.appendChild(frst)
+        each.appendChild(progress)
+        each.appendChild(last)
+
+        var retrn = {};
+        retrn['thisUplod'] = each;
+        retrn['progHndlr'] = progress;
+        retrn['percentHndlr'] = percent;
+        retrn['statusHndlr'] = status;
+
+        self.progCont.appendChild(each);
+        return retrn;
     }
-    //------------------------------ Dropped handling function
-    function si_cookHTML(evt, file) {
-      // console.log(file)
-      var initial = {
-        "name": file.name,
-            "size": file.size,
-            "type": file.type,
-            "data": evt.target.result
-      };
-      image_data.push(initial);
-      var img = new Image();
-      // var x = ''
-      img.onload = function(){
-        var x = img.height.toString() +' x '+img.width.toString()
 
-        var _size = file.size;
-            var fSExt = new Array('Bytes', 'KB', 'MB', 'GB'),
-            i=0;while(_size>900){_size/=1024;i++;}
-            var exactSize = (Math.round(_size*100)/100)+' '+fSExt[i];
-            
-        img.setAttribute('class', 'si_thumbnailImg');
-        img.setAttribute('ondragstart', 'return false;');
-        var aTag = document.createElement('div');
-        aTag.setAttribute('class', 'si_thumbnailWrapper');
-        aTag.appendChild(img);
-
-        var overLay = document.createElement('div');
-        overLay.setAttribute('class', 'si_thumbnailOverlay');
-
-        var lay = '<div class="si_ThumbnailOverlayContent"><small>'+x+' &nbsp;&nbsp;'+exactSize+'</small></div>';
-                  
-              overLay.innerHTML = lay;
-        aTag.appendChild(overLay);
-    
-        document.querySelector('#result').appendChild(aTag) 
-      }
-      img.src = evt.target.result;
+    function ___updateProgressStatus(event, progressDOM){
+        // _("loaded_n_total").innerHTML = "Uploaded "+event.loaded+" bytes of "+event.total;
+        var percent = (event.loaded / event.total) * 100;
+        progressDOM.percentHndlr.innerHTML = Math.round(percent)+'%';
+        progressDOM.progHndlr.style["width"] = Math.round(percent)+'%'; 
+        // console.log("Uploaded "+event.loaded+" bytes of "+event.total+" Percent:"+Math.round(percent)+"% uploaded... please wait")
+    }
+    function ___completeUpload(event, progressDOM){
+        console.log("Completed")
+        progressDOM.progHndlr.style['background-color'] = '#40FF00';
+        progressDOM.statusHndlr.innerHTML = '<font color="#40FF00">Upload complete. </font>';
+        // setTimeout(function(){
+        //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
+        // },7000);
+    }
+    function ___uploadError(event, progressDOM){
+      progressDOM.progHndlr.style['background-color'] = 'red';
+        progressDOM.statusHndlr.innerHTML = '<font color="red">Failed! </font>';
+        // setTimeout(function(){
+        //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
+        // },9000);
+    }
+    function ___uploadAbort(event, progressDOM){
+        progressDOM.progHndlr.style['background-color'] = 'red';
+        progressDOM.statusHndlr.innerHTML = '<font color="red">Aborted! </font>';
+        // setTimeout(function(){
+        //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
+        // },9000);
     }
 }

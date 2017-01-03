@@ -24,11 +24,11 @@
 			padding: 5px;
 			outline: 5px solid #f1f1f1;
 			margin: 50px 0px;
-			position: relative;
+			/*position: relative;*/
 		}
 		#image_gallery{
 			overflow-y: scroll;
-			height: 80vh;
+			max-height: 80vh;
 		}
 		#gallery-control{
 			padding: 5px;
@@ -77,7 +77,7 @@
 			overflow-y: scroll !important;
 		}
 		::-webkit-scrollbar {
-		    width: 0px;
+		    width: 12px;
 		}
 		/* images in gallery*/
 		.si_thumbnailImg{
@@ -99,23 +99,15 @@
 			</div>
 			<div id="image_gallery">
 			</div>
-			<div class="upload-overlay">
-				<div style="width: 160px; text-align: center; margin: 50px 0px 10px 50px;">
-					<img src="http://www.metatube.com/assets/metatube/video/img/Upload.svg" class="upload-overlay-img">
-		        	<div><small>Drag and drop Images</small></div>
-				</div>
-		        <div id="uploads-progress">
-		            
-		        </div>
-		    </div> 
-		    <div id="drop-overlay" class="upload-overlay">
-		    	<a href="#" id="close-overlay">&#10006;</a>
-		    </div>
 		</div>
 	</div>
 </body>
-<script type="text/javascript" src="js/incoming.js"></script>
+<script type="text/javascript" src="js/si_incoming.js"></script>
 <script>
+	var x = new $Incoming({
+		dropAreaID : "#wrapper", // this element should have fixed height
+		uploadURL : "/upload-image"
+	});
 	// ============= TEMPORARY SECTION for filling up gallery =========
 	/*
 		Gallery is supposed to be filled with images already uploaded to the system
@@ -123,7 +115,7 @@
 		----------------------------------------------------------------
 	*/
 	var ratios = [400,300,400,300];
-	var img_count = 50;
+	var img_count = 20;
 	function getImage(){
 		var h = ratios[Math.floor((Math.random() * 4) + 1) - 1];
 		var w = ratios[Math.floor((Math.random() * 4) + 1) - 1];
@@ -141,28 +133,11 @@
 				getImage();
 			}
 		}
-		img.setAttribute('src','https://unsplash.it/'+h+'/'+w+'/');
+		// img.setAttribute('src','https://unsplash.it/'+h+'/'+w+'/');
+		img.setAttribute('src','http://lorempixel.com/'+h+'/'+w+'/');
+
 	}
 	getImage();
-	// ============================= TEMP ENDs ==========================
-
-	// --- Toggle overlay
-	function toggleDisplay(elm)
-	{ 
-	    var el = document.querySelectorAll(elm);
-	    for(var i =0; i< el.length; i++){
-	    	var style = window.getComputedStyle(el[i])
-	        el[i].style.display = style.display === 'none' ? 'block' : 'none';
-	    }
-	    return;
-	}
-
-	document.getElementById('upload_image').addEventListener('click', function(e){
-		toggleDisplay('.upload-overlay');
-	});
-	document.getElementById('close-overlay').addEventListener('click', function(e){
-		toggleDisplay('.upload-overlay');
-	});
 	
 </script>
 </html>
