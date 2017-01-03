@@ -1,12 +1,17 @@
 /*
-    Dev STORY
-    1. Get the configuration details like dropContainer, Upload URL , etc
-    2. Create and place the overlay(our Dropzone) on dropContainer.
-    3. Take file inputs either from choosing files or drag and drop then pass it to process
-    4. Add files to filelist[], validate basic rules.
+    How to initialize?
+    Example: 
+    var x = new $Incoming({
+        dropAreaID : "#wrapper",        // this element should have fixed height
+        uploadURL : "/upload-image",    // URL which saves the files
+        uploadSuccess: function(data){  // When each file is successfully uploaded
+            console.log(data)
+        }
+    });
 */
 function $Incoming(conf){
     this.drop_cont = document.querySelector(conf.dropAreaID);
+    this.uploadSuccess = conf.uploadSuccess || function(data){console.log("default response", data)};
     // this.maxUploadSize = conf.maxUploadSize || '5 MB'
     this.uploadURL = conf.uploadURL;
     this.fileTypes = conf.fileTypes; // array
@@ -197,9 +202,9 @@ $Incoming.prototype._processFiles = function(files){
         // console.log("Uploaded "+event.loaded+" bytes of "+event.total+" Percent:"+Math.round(percent)+"% uploaded... please wait")
     }
     function ___completeUpload(event, progressDOM){
-        console.log("Completed")
         progressDOM.progHndlr.style['background-color'] = '#40FF00';
         progressDOM.statusHndlr.innerHTML = '<font color="#40FF00">Upload complete. </font>';
+        self.uploadSuccess(event.target.response)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },7000);

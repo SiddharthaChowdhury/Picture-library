@@ -10,8 +10,7 @@ module.exports = {
 	uploadImage: function(req, res){
 
 		var allowedTypes = ['image/jpeg', 'image/png'];
-		var allowedDir = '../../public/';
-
+		var allowedDir = '../../public/'; 
 		req.file("file").upload({
 	        saveAs:function(file, cb) {
 		        var d = new Date();
@@ -37,5 +36,4 @@ module.exports = {
        		}
 	    }); 
 	},
-
 }
