@@ -88,25 +88,20 @@ $Incoming.prototype._init = function(){
 
 $Incoming.prototype._processFiles = function(files){
     var self = this;
-    // if(self.filelist.length < 10){
-        for(var i = 0; i < files.length; i++){
-            var file = files[i];
-            // if file is image and size is proper
-            if(file.type.match('image')){ 
-                var FR = new FileReader();
-                FR.onload = (function(file){
-                    return function(evt){
-                        __ajxUpload(evt, file);
-                    }
-                })(file)
-                FR.readAsDataURL(file)
-                self.filelist.push(file) 
-            }
+    for(var i = 0; i < files.length; i++){
+        var file = files[i];
+        // if file is image and size is proper
+        if(file.type.match('image')){ 
+            var FR = new FileReader();
+            FR.onload = (function(file){
+                return function(evt){
+                    __ajxUpload(evt, file);
+                }
+            })(file)
+            FR.readAsDataURL(file)
+            self.filelist.push(file) 
         }
-    // }
-    // else{
-    //     alert("Maximum 10 files can be uploaded at a time.")
-    // }
+    }
 
     function __ajxUpload(evt, file){
         var formdata = new FormData();
@@ -136,7 +131,6 @@ $Incoming.prototype._processFiles = function(files){
         ajax.open("POST", self.uploadURL);
         ajax.send(formdata);
     }
-
     function __cookProgressBars( file ){
         /*
         *   Creating the structure of progress:
@@ -193,7 +187,6 @@ $Incoming.prototype._processFiles = function(files){
         self.progCont.appendChild(each);
         return retrn;
     }
-
     function ___updateProgressStatus(event, progressDOM){
         // _("loaded_n_total").innerHTML = "Uploaded "+event.loaded+" bytes of "+event.total;
         var percent = (event.loaded / event.total) * 100;
@@ -210,8 +203,9 @@ $Incoming.prototype._processFiles = function(files){
         // },7000);
     }
     function ___uploadError(event, progressDOM){
-      progressDOM.progHndlr.style['background-color'] = 'red';
+        progressDOM.progHndlr.style['background-color'] = 'red';
         progressDOM.statusHndlr.innerHTML = '<font color="red">Failed! </font>';
+        console.log(event.target)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },9000);
@@ -219,6 +213,7 @@ $Incoming.prototype._processFiles = function(files){
     function ___uploadAbort(event, progressDOM){
         progressDOM.progHndlr.style['background-color'] = 'red';
         progressDOM.statusHndlr.innerHTML = '<font color="red">Aborted! </font>';
+        console.log(event.target)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },9000);
