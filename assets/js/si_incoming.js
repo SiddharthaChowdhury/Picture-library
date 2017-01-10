@@ -197,18 +197,20 @@ $Incoming.prototype._processFiles = function(files){
         // console.log("Uploaded "+event.loaded+" bytes of "+event.total+" Percent:"+Math.round(percent)+"% uploaded... please wait")
     }
     function ___completeUpload(event, progressDOM){
-        
-        if(event.target.status == 404){
+        var _status = '';
+        if(event.target.status > 390){
+            _status = 'FAILED';
             progressDOM.percentHndlr.innerHTML = '';
             progressDOM.progHndlr.style["width"] = 0+'%'; 
             progressDOM.progHndlr.style['background-color'] = 'red';
-            progressDOM.statusHndlr.innerHTML = '<font color="red">Failed! Status:404 </font>';
+            progressDOM.statusHndlr.innerHTML = '<font color="red">Failed! Error from server. </font>';
         }
         else{
+            _status = 'SUCCESS';
             progressDOM.progHndlr.style['background-color'] = '#40FF00';
             progressDOM.statusHndlr.innerHTML = '<font color="#40FF00">Upload complete. </font>';
         }
-        self.uploadSuccess(event.target)
+        self.uploadSuccess(_status, event.target)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },7000);

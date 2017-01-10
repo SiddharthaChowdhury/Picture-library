@@ -102,13 +102,13 @@
 		</div>
 	</div>
 </body>
-<script type="text/javascript" src="js/si_incoming.min.js"></script>
+<script type="text/javascript" src="js/si_incoming.js"></script>
 <script>
 	var x = new $Incoming({
 		dropAreaID : "#wrapper", // this element should have specific height (explicitly defined) like: height:500px
 		uploadURL : "/upload-image",
-		uploadSuccess: function(data){
-			console.log(data)
+		uploadSuccess: function(status, data){
+			console.log(status)
 		}
 	});
 
