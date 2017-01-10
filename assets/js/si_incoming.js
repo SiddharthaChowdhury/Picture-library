@@ -108,6 +108,11 @@ $Incoming.prototype._processFiles = function(files){
         formdata.append("file", file);
         var progressDOM = __cookProgressBars( file );
         var ajax = new XMLHttpRequest();
+        ajax.onreadystatechange = function(){
+            if(this && this.readyState > 0 && this.readyState < 4){
+                this.abort();
+            }
+        }
         ajax.upload.addEventListener("progress", (function(progressDOM){
             return function(event) {
                 ___updateProgressStatus(event, progressDOM);
