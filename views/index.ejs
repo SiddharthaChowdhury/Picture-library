@@ -102,15 +102,26 @@
 		</div>
 	</div>
 </body>
-<script type="text/javascript" src="js/si_incoming.js"></script>
+<script type="text/javascript" src="js/si_incoming.min.js"></script>
 <script>
 	var x = new $Incoming({
-		dropAreaID : "#wrapper", // this element should have fixed height
+		dropAreaID : "#wrapper", // this element should have specific height (explicitly defined) like: height:500px
 		uploadURL : "/upload-image",
 		uploadSuccess: function(data){
 			console.log(data)
 		}
 	});
+
+
+
+	// (OPTIONAL) Click event on "Upload image" button 
+	document.getElementById('upload_image').addEventListener('click', function(){
+		var overlay = x.dropZone;
+		var style = window.getComputedStyle(overlay)
+        overlay.style.display = style.display === 'none' ? 'block' : 'none';
+	});
+
+
 	// ============= TEMPORARY SECTION for filling up gallery =========
 	/*
 		Gallery is supposed to be filled with images already uploaded to the system
@@ -138,7 +149,6 @@
 		}
 		// img.setAttribute('src','https://unsplash.it/'+h+'/'+w+'/');
 		img.setAttribute('src','http://lorempixel.com/'+h+'/'+w+'/');
-
 	}
 	getImage();
 	

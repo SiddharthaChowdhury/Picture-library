@@ -108,31 +108,28 @@ $Incoming.prototype._processFiles = function(files){
         formdata.append("file", file);
         var progressDOM = __cookProgressBars( file );
         var ajax = new XMLHttpRequest();
-        ajax.onreadystatechange = function(){
-            if(this && this.readyState > 0 && this.readyState < 4){
-                this.abort();
-            }
-        }
+        
         ajax.upload.addEventListener("progress", (function(progressDOM){
-            return function(event) {
+            return function(event) {        
                 ___updateProgressStatus(event, progressDOM);
             };
         })(progressDOM), false);
-        ajax.addEventListener("load", (function(progressDOM){
+        ajax.addEventListener("load", (function(progressDOM){    
             return function(event){
                 ___completeUpload(event, progressDOM);
             }
         })(progressDOM), false);
-        ajax.addEventListener("error", (function(progressDOM){
+        ajax.addEventListener("error", (function(progressDOM){    
             return function(event){
                 ___uploadError(event, progressDOM);
             }
         })(progressDOM), false);
-        ajax.addEventListener("abort", (function(progressDOM){
+        ajax.addEventListener("abort", (function(progressDOM){    
             return function(event){
                 ___uploadAbort(event, progressDOM);
             }
         })(progressDOM), false);
+
         ajax.open("POST", self.uploadURL);
         ajax.send(formdata);
     }
@@ -200,9 +197,18 @@ $Incoming.prototype._processFiles = function(files){
         // console.log("Uploaded "+event.loaded+" bytes of "+event.total+" Percent:"+Math.round(percent)+"% uploaded... please wait")
     }
     function ___completeUpload(event, progressDOM){
-        progressDOM.progHndlr.style['background-color'] = '#40FF00';
-        progressDOM.statusHndlr.innerHTML = '<font color="#40FF00">Upload complete. </font>';
-        self.uploadSuccess(event.target.response)
+        
+        if(event.target.status == 404){
+            progressDOM.percentHndlr.innerHTML = '';
+            progressDOM.progHndlr.style["width"] = 0+'%'; 
+            progressDOM.progHndlr.style['background-color'] = 'red';
+            progressDOM.statusHndlr.innerHTML = '<font color="red">Failed! Status:404 </font>';
+        }
+        else{
+            progressDOM.progHndlr.style['background-color'] = '#40FF00';
+            progressDOM.statusHndlr.innerHTML = '<font color="#40FF00">Upload complete. </font>';
+        }
+        self.uploadSuccess(event.target)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },7000);
@@ -210,7 +216,7 @@ $Incoming.prototype._processFiles = function(files){
     function ___uploadError(event, progressDOM){
         progressDOM.progHndlr.style['background-color'] = 'red';
         progressDOM.statusHndlr.innerHTML = '<font color="red">Failed! </font>';
-        console.log(event.target)
+        // console.log(event.target)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },9000);
@@ -218,7 +224,7 @@ $Incoming.prototype._processFiles = function(files){
     function ___uploadAbort(event, progressDOM){
         progressDOM.progHndlr.style['background-color'] = 'red';
         progressDOM.statusHndlr.innerHTML = '<font color="red">Aborted! </font>';
-        console.log(event.target)
+        // console.log(event.target)
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },9000);
