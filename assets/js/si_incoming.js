@@ -12,9 +12,9 @@
 function $Incoming(conf){
     this.drop_cont = document.querySelector(conf.dropAreaID);
     this.uploadSuccess = conf.uploadSuccess || function(data){console.log("default response", data)};
-    // this.maxUploadSize = conf.maxUploadSize || '5 MB'
+    this.maxUploadSize = conf.maxUploadSize || '31457280' // 30mb
     this.uploadURL = conf.uploadURL;
-    this.fileTypes = conf.fileTypes; // array
+    // this.fileTypes = conf.fileTypes; // array
     this.dropZone = null;
     this.progCont = null;
     this.filelist = [];
@@ -107,31 +107,44 @@ $Incoming.prototype._processFiles = function(files){
         var formdata = new FormData();
         formdata.append("file", file);
         var progressDOM = __cookProgressBars( file );
-        var ajax = new XMLHttpRequest();
-        
-        ajax.upload.addEventListener("progress", (function(progressDOM){
-            return function(event) {        
-                ___updateProgressStatus(event, progressDOM);
-            };
-        })(progressDOM), false);
-        ajax.addEventListener("load", (function(progressDOM){    
-            return function(event){
-                ___completeUpload(event, progressDOM);
-            }
-        })(progressDOM), false);
-        ajax.addEventListener("error", (function(progressDOM){    
-            return function(event){
-                ___uploadError(event, progressDOM);
-            }
-        })(progressDOM), false);
-        ajax.addEventListener("abort", (function(progressDOM){    
-            return function(event){
-                ___uploadAbort(event, progressDOM);
-            }
-        })(progressDOM), false);
+        console.log(self.maxUploadSize)
+        if( file.size <= self.maxUploadSize ){
+            var ajax = new XMLHttpRequest();
+            
+            ajax.upload.addEventListener("progress", (function(progressDOM){
+                return function(event) {        
+                    ___updateProgressStatus(event, progressDOM);
+                };
+            })(progressDOM), false);
+            ajax.addEventListener("load", (function(progressDOM){    
+                return function(event){
+                    ___completeUpload(event, progressDOM);
+                }
+            })(progressDOM), false);
+            ajax.addEventListener("error", (function(progressDOM){    
+                return function(event){
+                    ___uploadError(event, progressDOM);
+                }
+            })(progressDOM), false);
+            ajax.addEventListener("abort", (function(progressDOM){    
+                return function(event){
+                    ___uploadAbort(event, progressDOM);
+                }
+            })(progressDOM), false);
 
-        ajax.open("POST", self.uploadURL);
-        ajax.send(formdata);
+            ajax.open("POST", self.uploadURL);
+            ajax.send(formdata);
+        }
+        else{
+            var _size = self.maxUploadSize;
+            var fSExt = new Array('Bytes', 'KB', 'MB', 'GB'),
+            i=0;while(_size>900){_size/=1024;i++;}
+            var exactSize = (Math.round(_size*100)/100)+' '+fSExt[i];
+
+            progressDOM.progHndlr.style["width"] = 0+'%'; 
+            progressDOM.progHndlr.style['background-color'] = 'red';
+            progressDOM.statusHndlr.innerHTML = '<font color="red">File can\'t be more than '+exactSize+' </font>';
+        }   
     }
     function __cookProgressBars( file ){
         /*
