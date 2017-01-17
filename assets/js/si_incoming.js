@@ -107,7 +107,7 @@ $Incoming.prototype._processFiles = function(files){
         var formdata = new FormData();
         formdata.append("incoming", file);
         var progressDOM = __cookProgressBars( file );
-        console.log(self.maxUploadSize)
+        // console.log(self.maxUploadSize)
         if( file.size <= self.maxUploadSize ){
             var ajax = new XMLHttpRequest();
             
@@ -223,7 +223,7 @@ $Incoming.prototype._processFiles = function(files){
             progressDOM.progHndlr.style['background-color'] = '#40FF00';
             progressDOM.statusHndlr.innerHTML = '<font color="#40FF00">Upload complete. </font>';
         }
-        self.uploadSuccess(_status, event.target)
+        self.uploadSuccess(_status, event.target.status, event.target.response )
         // setTimeout(function(){
         //     progressDOM.thisUplod.parentNode.removeChild( progressDOM.thisUplod );
         // },7000);
