@@ -1,5 +1,4 @@
-
-var fs = require('fs');
+		
 
 module.exports = {
 	
@@ -13,7 +12,7 @@ module.exports = {
 		var allowedDir = '../../public/'; 
 
 		// Using skipper
-		req.file("file").upload({
+		req.file("incoming").upload({
 	        saveAs:function(file, cb) {
 
 		        if(allowedTypes.indexOf(file.headers['content-type']) === -1) {
@@ -41,5 +40,7 @@ module.exports = {
        			return res.json({msg:"File was not uploaded", data: files});
        		}
 	    }); 
+
+
 	},
 }

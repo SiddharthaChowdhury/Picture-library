@@ -46,7 +46,7 @@ $Incoming.prototype._init = function(){
 
     var overlayTopNav = document.createElement('div');
     overlayTopNav.setAttribute('style', 'padding:15px; font-size:0.9em; margin-bottom:15px;')
-    overlayTopNav.innerHTML = 'Drag and Drop your images below or simply '
+    overlayTopNav.innerHTML = 'Drag and Drop your images below or just '
 
     var preUploadCont = document.createElement('div');
     preUploadCont.setAttribute('style', 'padding:10px 20px;');
@@ -73,7 +73,7 @@ $Incoming.prototype._init = function(){
 
     var closeOverlay = document.createElement('a');
     closeOverlay.innerHTML = '&#10006;';
-    closeOverlay.setAttribute('style', 'position: absolute; cursor:pointer; right: 10px; top: 10px; font-size: 17px; text-decoration: none; color: #fff; border-radius: 50%; border: 2px solid #fff; padding: 5px 10px;')
+    closeOverlay.setAttribute('style', 'position: absolute; cursor:pointer; right: 10px; top: 10px; font-size: 17px; text-decoration: none; color: #fff; border-radius: 2px; border: 2px solid #fff; padding: 5px 10px;')
     closeOverlay.addEventListener('click', function(e){
         overlay.style.display = 'none';
     })
@@ -105,7 +105,7 @@ $Incoming.prototype._processFiles = function(files){
 
     function __ajxUpload(evt, file){
         var formdata = new FormData();
-        formdata.append("file", file);
+        formdata.append("incoming", file);
         var progressDOM = __cookProgressBars( file );
         console.log(self.maxUploadSize)
         if( file.size <= self.maxUploadSize ){
