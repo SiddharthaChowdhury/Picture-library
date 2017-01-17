@@ -108,9 +108,11 @@
 		dropAreaID : "#wrapper", // this element should have specific height (explicitly defined) like: height:500px
 		uploadURL : "/upload-image",
 		// maxUploadSize: '5242880', // in bytes
-		uploadSuccess: function(status, data){
-			console.log(status)
-		}
+		uploadSuccess: function(status_text, status_code, response){
+	        console.log(status_text)
+	        console.log(status_code)
+	        console.log(response)
+	    }
 	});
 
 
